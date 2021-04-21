@@ -3,9 +3,7 @@
     <h2>新規登録画面</h2>
     <form>
       <dl>
-        <dt>
-          ユーザー名
-        </dt>
+        <dt>ユーザー名</dt>
         <dd>
           <input type="text" autocomplete="username" v-model="username" />
         </dd>
@@ -37,34 +35,39 @@
 </template>
 
 <script>
-import firebase from 'firebase/app';
-import 'firebase/auth';
-
 export default {
-  data() {
-    return {
-      username: '',
-      email: '',
-      password: '',
-    };
+  computed: {
+    doubleCount() {
+      return this.$store.getters.doubleCount;
+    },
+    username: {
+      get() {
+        return this.$store.getters.username;
+      },
+      set(value) {
+        this.$store.dispatch('updateUsername', value);
+      },
+    },
+    email: {
+      get() {
+        return this.$store.getters.email;
+      },
+      set(value) {
+        this.$store.dispatch('updateEmail', value);
+      },
+    },
+    password: {
+      get() {
+        return this.$store.getters.password;
+      },
+      set(value) {
+        this.$store.dispatch('updatePassword', value);
+      },
+    },
   },
   methods: {
     signUp() {
-      firebase
-        .auth()
-        .createUserWithEmailAndPassword(this.email, this.password)
-        .then((userCredential) => {
-          userCredential.user.updateProfile({
-            displayName: this.username,
-          });
-          alert('登録しました！');
-          this.username = '';
-          this.email = '';
-          this.password = '';
-        })
-        .catch((error) => {
-          alert(error.message);
-        });
+      this.$store.dispatch('signUp');
     },
   },
 };
