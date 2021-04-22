@@ -26,23 +26,6 @@ export default new Vuex.Store({
     updatePassword(state, newPassword) {
       state.password = newPassword;
     },
-    signUp(state) {
-      firebase
-        .auth()
-        .createUserWithEmailAndPassword(state.email, state.password)
-        .then((userCredential) => {
-          userCredential.user.updateProfile({
-            displayName: state.username,
-          });
-          alert('登録しました！');
-          state.username = '';
-          state.email = '';
-          state.password = '';
-        })
-        .catch((error) => {
-          alert(error.message);
-        });
-    },
   },
   actions: {
     updateUsername(context, newUsername) {
@@ -55,7 +38,24 @@ export default new Vuex.Store({
       context.commit('updatePassword', newPassword);
     },
     signUp(context) {
-      context.commit('signUp');
+      firebase
+        .auth()
+        .createUserWithEmailAndPassword(
+          context.state.email,
+          context.state.password
+        )
+        .then((userCredential) => {
+          userCredential.user.updateProfile({
+            displayName: context.state.username,
+          });
+          alert('登録しました！');
+          context.state.username = '';
+          context.state.email = '';
+          context.state.password = '';
+        })
+        .catch((error) => {
+          alert(error.message);
+        });
     },
   },
 });
