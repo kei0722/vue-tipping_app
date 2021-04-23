@@ -26,6 +26,11 @@ export default new Vuex.Store({
     updatePassword(state, newPassword) {
       state.password = newPassword;
     },
+    emptyInputs(state) {
+      state.username = '';
+      state.email = '';
+      state.password = '';
+    },
   },
   actions: {
     updateUsername(context, newUsername) {
@@ -49,9 +54,7 @@ export default new Vuex.Store({
             displayName: context.state.username,
           });
           alert('登録しました！');
-          context.state.username = '';
-          context.state.email = '';
-          context.state.password = '';
+          context.commit('emptyInputs');
         })
         .catch((error) => {
           alert(error.message);
