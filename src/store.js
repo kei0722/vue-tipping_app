@@ -60,5 +60,19 @@ export default new Vuex.Store({
           alert(error.message);
         });
     },
+    signIn(context) {
+      firebase
+        .auth()
+        .signInWithEmailAndPassword(context.state.email, context.state.password)
+        .then(
+          function() {
+            alert('ログインしました！');
+            context.commit('emptyInputs');
+          },
+          (error) => {
+            alert(error.message);
+          }
+        );
+    },
   },
 });
