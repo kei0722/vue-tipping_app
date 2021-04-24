@@ -31,9 +31,6 @@
 <script>
 export default {
   computed: {
-    doubleCount() {
-      return this.$store.getters.doubleCount;
-    },
     username: {
       get() {
         return this.$store.getters.username;
