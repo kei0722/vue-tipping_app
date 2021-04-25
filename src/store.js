@@ -1,7 +1,9 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
+import router from './router';
 import firebase from 'firebase/app';
 import 'firebase/auth';
+import 'firebase/firestore';
 
 Vue.use(Vuex);
 
@@ -10,11 +12,19 @@ export default new Vuex.Store({
     username: '',
     email: '',
     password: '',
+    currentUser: {
+      id: '',
+      name: '',
+      wallet: '',
+    },
   },
   getters: {
     username: (state) => state.username,
     email: (state) => state.email,
     password: (state) => state.password,
+    currentUserId: (state) => state.currentUser.id,
+    currentUserName: (state) => state.currentUser.name,
+    currentUserWallet: (state) => state.currentUser.wallet,
   },
   mutations: {
     updateUsername(state, newUsername) {
@@ -31,6 +41,12 @@ export default new Vuex.Store({
       state.email = '';
       state.password = '';
     },
+    goToSigninPage() {
+      router.push('/signin');
+    },
+    getCurrentUserId(state, userCredential) {
+      state.currentUser.id = userCredential.user.uid;
+    },
   },
   actions: {
     updateUsername(context, newUsername) {
@@ -42,6 +58,42 @@ export default new Vuex.Store({
     updatePassword(context, newPassword) {
       context.commit('updatePassword', newPassword);
     },
+    goToSigninPage(context) {
+      context.commit('goToSigninPage');
+    },
+    getCurrentUserInfo(context) {
+      firebase
+        .firestore()
+        .collection('users')
+        .doc(context.state.currentUser.id)
+        .get()
+        .then((doc) => {
+          const currentUserInfo = doc.data();
+          context.state.currentUser.name = currentUserInfo.name;
+          context.state.currentUser.wallet = currentUserInfo.wallet;
+        })
+        .catch((error) => {
+          alert(error.message);
+        });
+    },
+    createAccount(context, userCredential) {
+      firebase
+        .firestore()
+        .collection('users')
+        .doc(userCredential.user.uid)
+        .set({
+          name: context.state.username,
+          email: context.state.email,
+          wallet: 1000,
+        })
+        .then(function() {
+          alert('登録しました！');
+          context.commit('emptyInputs');
+        })
+        .catch((error) => {
+          alert(error.message);
+        });
+    },
     signUp(context) {
       firebase
         .auth()
@@ -50,11 +102,7 @@ export default new Vuex.Store({
           context.state.password
         )
         .then((userCredential) => {
-          userCredential.user.updateProfile({
-            displayName: context.state.username,
-          });
-          alert('登録しました！');
-          context.commit('emptyInputs');
+          context.dispatch('createAccount', userCredential);
         })
         .catch((error) => {
           alert(error.message);
@@ -65,9 +113,10 @@ export default new Vuex.Store({
         .auth()
         .signInWithEmailAndPassword(context.state.email, context.state.password)
         .then(
-          function() {
-            alert('ログインしました！');
+          (userCredential) => {
+            context.commit('getCurrentUserId', userCredential);
             context.commit('emptyInputs');
+            router.push('/dashboard');
           },
           (error) => {
             alert(error.message);

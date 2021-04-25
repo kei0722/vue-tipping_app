@@ -18,10 +18,6 @@
   margin-top: 60px;
 }
 
-.form {
-  margin-bottom: 50px;
-}
-
 form {
   margin: 0 auto;
   padding: 10px 50px;
@@ -65,5 +61,10 @@ form dl dd {
 
 .link:hover {
   text-decoration: underline;
+}
+
+small {
+  display: inline-block;
+  margin-top: 50px;
 }
 </style>
