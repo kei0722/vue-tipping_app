@@ -32,7 +32,7 @@ export default {
     },
   },
   created: function() {
-    this.$store.dispatch('getCurrentUserInfo');
+    this.$store.dispatch('getCurrentUser');
   },
 };
 </script>

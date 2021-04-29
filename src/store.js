@@ -41,8 +41,9 @@ export default new Vuex.Store({
       state.email = '';
       state.password = '';
     },
-    goToSigninPage() {
-      router.push('/signin');
+    getCurrentUserInfo(state, currentUserInfo) {
+      state.currentUser.name = currentUserInfo.name;
+      state.currentUser.wallet = currentUserInfo.wallet;
     },
     getCurrentUserId(state, userCredential) {
       state.currentUser.id = userCredential.user.uid;
@@ -58,10 +59,7 @@ export default new Vuex.Store({
     updatePassword(context, newPassword) {
       context.commit('updatePassword', newPassword);
     },
-    goToSigninPage(context) {
-      context.commit('goToSigninPage');
-    },
-    getCurrentUserInfo(context) {
+    getCurrentUser(context) {
       firebase
         .firestore()
         .collection('users')
@@ -69,8 +67,7 @@ export default new Vuex.Store({
         .get()
         .then((doc) => {
           const currentUserInfo = doc.data();
-          context.state.currentUser.name = currentUserInfo.name;
-          context.state.currentUser.wallet = currentUserInfo.wallet;
+          context.commit('getCurrentUserInfo', currentUserInfo);
         })
         .catch((error) => {
           alert(error.message);
