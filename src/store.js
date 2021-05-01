@@ -45,8 +45,13 @@ export default new Vuex.Store({
       state.currentUser.name = currentUserInfo.name;
       state.currentUser.wallet = currentUserInfo.wallet;
     },
-    getCurrentUserId(state, userCredential) {
-      state.currentUser.id = userCredential.user.uid;
+    getCurrentUserId(state, userId) {
+      state.currentUser.id = userId;
+    },
+    clearCurrentUserInfo(state) {
+      state.currentUser.id = '';
+      state.currentUser.name = '';
+      state.currentUser.wallet = '';
     },
   },
   actions: {
@@ -59,11 +64,11 @@ export default new Vuex.Store({
     updatePassword(context, newPassword) {
       context.commit('updatePassword', newPassword);
     },
-    getCurrentUser(context) {
+    getCurrentUser(context, userId) {
       firebase
         .firestore()
         .collection('users')
-        .doc(context.state.currentUser.id)
+        .doc(userId)
         .get()
         .then((doc) => {
           const currentUserInfo = doc.data();
@@ -111,7 +116,7 @@ export default new Vuex.Store({
         .signInWithEmailAndPassword(context.state.email, context.state.password)
         .then(
           (userCredential) => {
-            context.commit('getCurrentUserId', userCredential);
+            context.commit('getCurrentUserId', userCredential.user.uid);
             context.commit('emptyInputs');
             router.push('/dashboard');
           },
@@ -119,6 +124,27 @@ export default new Vuex.Store({
             alert(error.message);
           }
         );
+    },
+    getAuth(context) {
+      firebase.auth().onAuthStateChanged((user) => {
+        if (user) {
+          context.commit('getCurrentUserId', user.uid);
+          context.dispatch('getCurrentUser', user.uid);
+        } else {
+          router.push('/signin');
+        }
+      });
+    },
+    signOut(context) {
+      firebase
+        .auth()
+        .signOut()
+        .then(() => {
+          context.commit('clearCurrentUserInfo');
+        })
+        .catch((error) => {
+          alert(error.message);
+        });
     },
   },
 });

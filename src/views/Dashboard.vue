@@ -6,7 +6,7 @@
       </div>
       <div class="dashboard-head-right">
         <p>残高：{{ currentUserWallet }}</p>
-        <button type="button" class="btn-signout">
+        <button type="button" class="btn-signout" @click="signOut">
           ログアウト
         </button>
       </div>
@@ -32,7 +32,12 @@ export default {
     },
   },
   created: function() {
-    this.$store.dispatch('getCurrentUser');
+    this.$store.dispatch('getAuth');
+  },
+  methods: {
+    signOut() {
+      this.$store.dispatch('signOut');
+    },
   },
 };
 </script>
