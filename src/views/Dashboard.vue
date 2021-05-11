@@ -1,5 +1,17 @@
 <template>
   <div>
+    <div
+      id="mask"
+      :class="{ hidden: !$store.state.modalOn }"
+      @click="toggleModal"
+    ></div>
+    <div id="modal" :class="{ hidden: !$store.state.modalOn }">
+      <p>{{ clickedUser.name }}さんの残高</p>
+      <p>{{ clickedUser.wallet }}</p>
+      <button class="btn-close" @click="toggleModal">
+        Close
+      </button>
+    </div>
     <div class="dashboard-head">
       <div class="dashboard-head-left">
         <p>{{ currentUserName }}さん ようこそ！！</p>
@@ -17,6 +29,15 @@
         <th>ユーザー名</th>
         <th></th>
       </tr>
+      <tr v-for="(otherUser, index) in otherUsers" :key="otherUser.index">
+        <td>{{ otherUser.name }}</td>
+        <td class="btn-td">
+          <button type="button" @click="showWallet(index)">
+            Walletを見る
+          </button>
+          <button type="button">送る</button>
+        </td>
+      </tr>
     </table>
   </div>
 </template>
@@ -30,6 +51,12 @@ export default {
     currentUserWallet() {
       return this.$store.getters.currentUserWallet;
     },
+    otherUsers() {
+      return this.$store.getters.otherUsers;
+    },
+    clickedUser() {
+      return this.$store.getters.clickedUser;
+    },
   },
   created: function() {
     this.$store.dispatch('getAuth');
@@ -37,6 +64,13 @@ export default {
   methods: {
     signOut() {
       this.$store.dispatch('signOut');
+    },
+    toggleModal() {
+      this.$store.commit('toggleModal');
+    },
+    showWallet(index) {
+      this.toggleModal();
+      this.$store.commit('getClickedUser', index);
     },
   },
 };
@@ -113,5 +147,60 @@ table {
 
 .btn-td button:first-child {
   margin-right: 10px;
+}
+
+.btn-close {
+  display: inline-block;
+  padding: 6px 8px;
+  text-decoration: none;
+  font-size: 16px;
+  background-color: #17a2b8;
+  color: #fff;
+  border: solid 1px #17a2b8;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-close:hover {
+  opacity: 0.8;
+}
+
+#mask {
+  background: rgba(0, 0, 0, 0.4);
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  z-index: 1;
+}
+
+#modal {
+  background: #fff;
+  color: #555;
+  width: 50%;
+  padding: 20px;
+  border-radius: 3px;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  z-index: 2;
+  transition: all 0.5s ease;
+}
+
+#modal p {
+  margin: 0 0 20px;
+}
+
+#mask.hidden {
+  display: none;
+}
+
+#modal.hidden {
+  display: none;
 }
 </style>

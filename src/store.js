@@ -17,6 +17,12 @@ export default new Vuex.Store({
       name: '',
       wallet: '',
     },
+    otherUsers: [],
+    clickedUser: {
+      name: '',
+      wallet: '',
+    },
+    modalOn: false,
   },
   getters: {
     username: (state) => state.username,
@@ -25,6 +31,8 @@ export default new Vuex.Store({
     currentUserId: (state) => state.currentUser.id,
     currentUserName: (state) => state.currentUser.name,
     currentUserWallet: (state) => state.currentUser.wallet,
+    otherUsers: (state) => state.otherUsers,
+    clickedUser: (state) => state.clickedUser,
   },
   mutations: {
     updateUsername(state, newUsername) {
@@ -48,10 +56,23 @@ export default new Vuex.Store({
     getCurrentUserId(state, userId) {
       state.currentUser.id = userId;
     },
+    getOtherUser(state, otherUser) {
+      state.otherUsers.push(otherUser);
+    },
     clearCurrentUserInfo(state) {
       state.currentUser.id = '';
       state.currentUser.name = '';
       state.currentUser.wallet = '';
+    },
+    clearOtherUsers(state) {
+      state.otherUsers = [];
+    },
+    getClickedUser(state, index) {
+      state.clickedUser.name = state.otherUsers[index].name;
+      state.clickedUser.wallet = state.otherUsers[index].wallet;
+    },
+    toggleModal(state) {
+      state.modalOn = !state.modalOn;
     },
   },
   actions: {
@@ -73,6 +94,24 @@ export default new Vuex.Store({
         .then((doc) => {
           const currentUserInfo = doc.data();
           context.commit('getCurrentUserInfo', currentUserInfo);
+        })
+        .catch((error) => {
+          alert(error.message);
+        });
+    },
+    getOtherUsers(context, userId) {
+      firebase
+        .firestore()
+        .collection('users')
+        .where(firebase.firestore.FieldPath.documentId(), '!=', userId)
+        .get()
+        .then((docs) => {
+          context.commit('clearOtherUsers');
+          docs.forEach((doc) => {
+            if (doc.data().name) {
+              context.commit('getOtherUser', doc.data());
+            }
+          });
         })
         .catch((error) => {
           alert(error.message);
@@ -130,6 +169,7 @@ export default new Vuex.Store({
         if (user) {
           context.commit('getCurrentUserId', user.uid);
           context.dispatch('getCurrentUser', user.uid);
+          context.dispatch('getOtherUsers', user.uid);
         } else {
           router.push('/signin');
         }
