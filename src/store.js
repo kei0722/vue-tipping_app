@@ -22,7 +22,7 @@ export default new Vuex.Store({
       name: '',
       wallet: '',
     },
-    modalOn: false,
+    showModal: false,
   },
   getters: {
     username: (state) => state.username,
@@ -33,6 +33,7 @@ export default new Vuex.Store({
     currentUserWallet: (state) => state.currentUser.wallet,
     otherUsers: (state) => state.otherUsers,
     clickedUser: (state) => state.clickedUser,
+    showModal: (state) => state.showModal,
   },
   mutations: {
     updateUsername(state, newUsername) {
@@ -56,7 +57,7 @@ export default new Vuex.Store({
     getCurrentUserId(state, userId) {
       state.currentUser.id = userId;
     },
-    getOtherUser(state, otherUser) {
+    pushOtherUsers(state, otherUser) {
       state.otherUsers.push(otherUser);
     },
     clearCurrentUserInfo(state) {
@@ -72,7 +73,7 @@ export default new Vuex.Store({
       state.clickedUser.wallet = state.otherUsers[index].wallet;
     },
     toggleModal(state) {
-      state.modalOn = !state.modalOn;
+      state.showModal = !state.showModal;
     },
   },
   actions: {
@@ -109,7 +110,7 @@ export default new Vuex.Store({
           context.commit('clearOtherUsers');
           docs.forEach((doc) => {
             if (doc.data().name) {
-              context.commit('getOtherUser', doc.data());
+              context.commit('pushOtherUsers', doc.data());
             }
           });
         })

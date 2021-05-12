@@ -2,10 +2,10 @@
   <div>
     <div
       id="mask"
-      :class="{ hidden: !$store.state.modalOn }"
+      :class="{ hidden: !$store.getters.showModal }"
       @click="toggleModal"
     ></div>
-    <div id="modal" :class="{ hidden: !$store.state.modalOn }">
+    <div id="modal" :class="{ hidden: !$store.getters.showModal }">
       <p>{{ clickedUser.name }}さんの残高</p>
       <p>{{ clickedUser.wallet }}</p>
       <button class="btn-close" @click="toggleModal">
