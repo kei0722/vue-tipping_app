@@ -6,11 +6,21 @@
       @click="toggleModal"
     ></div>
     <div id="modal" :class="{ hidden: !$store.getters.showModal }">
-      <p>{{ clickedUser.name }}さんの残高</p>
-      <p>{{ clickedUser.wallet }}</p>
-      <button class="btn-close" @click="toggleModal">
-        Close
-      </button>
+      <div v-show="$store.getters.onModal === 'showWallet'">
+        <p>{{ clickedUser.name }}さんの残高</p>
+        <p>{{ clickedUser.wallet }}</p>
+        <button class="btn-modal" @click="toggleModal">
+          Close
+        </button>
+      </div>
+      <div v-show="$store.getters.onModal === 'sendWallet'">
+        <p>あなたの金額：{{ currentUserWallet }}</p>
+        <p>送る金額</p>
+        <input type="number" v-model="sendWalletAmount" />
+        <button class="btn-modal" @click="sendWallet">
+          送信
+        </button>
+      </div>
     </div>
     <div class="dashboard-head">
       <div class="dashboard-head-left">
@@ -35,7 +45,7 @@
           <button type="button" @click="showWallet(index)">
             Walletを見る
           </button>
-          <button type="button">送る</button>
+          <button type="button" @click="showSendWallet(index)">送る</button>
         </td>
       </tr>
     </table>
@@ -57,6 +67,14 @@ export default {
     clickedUser() {
       return this.$store.getters.clickedUser;
     },
+    sendWalletAmount: {
+      get() {
+        return this.$store.getters.sendWalletAmount;
+      },
+      set(value) {
+        this.$store.commit('updateSendWalletAmount', value);
+      },
+    },
   },
   created: function() {
     this.$store.dispatch('getAuth');
@@ -67,10 +85,21 @@ export default {
     },
     toggleModal() {
       this.$store.commit('toggleModal');
+      this.$store.commit('clearSendWalletAmount');
     },
     showWallet(index) {
+      this.$store.commit('switchToShowWallet');
       this.toggleModal();
       this.$store.commit('getClickedUser', index);
+    },
+    showSendWallet(index) {
+      this.$store.commit('switchToSend');
+      this.toggleModal();
+      this.$store.commit('getClickedUser', index);
+    },
+    sendWallet() {
+      this.$store.dispatch('sendWallet');
+      this.toggleModal();
     },
   },
 };
@@ -149,7 +178,7 @@ table {
   margin-right: 10px;
 }
 
-.btn-close {
+.btn-modal {
   display: inline-block;
   padding: 6px 8px;
   text-decoration: none;
@@ -193,7 +222,14 @@ table {
 }
 
 #modal p {
-  margin: 0 0 20px;
+  margin: 0 0 10px;
+}
+
+#modal input[type='number'] {
+  display: block;
+  width: 60%;
+  margin: 0 auto 10px;
+  padding: 3px 6px;
 }
 
 #mask.hidden {
