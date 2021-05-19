@@ -21,8 +21,11 @@ export default new Vuex.Store({
     clickedUser: {
       name: '',
       wallet: '',
+      id: '',
     },
+    sendWalletAmount: '',
     showModal: false,
+    onModal: '',
   },
   getters: {
     username: (state) => state.username,
@@ -34,6 +37,8 @@ export default new Vuex.Store({
     otherUsers: (state) => state.otherUsers,
     clickedUser: (state) => state.clickedUser,
     showModal: (state) => state.showModal,
+    onModal: (state) => state.onModal,
+    sendWalletAmount: (state) => state.sendWalletAmount,
   },
   mutations: {
     updateUsername(state, newUsername) {
@@ -71,9 +76,33 @@ export default new Vuex.Store({
     getClickedUser(state, index) {
       state.clickedUser.name = state.otherUsers[index].name;
       state.clickedUser.wallet = state.otherUsers[index].wallet;
+      state.clickedUser.id = state.otherUsers[index].id;
+    },
+    switchToShowWallet(state) {
+      state.onModal = 'showWallet';
+    },
+    switchToSend(state) {
+      state.onModal = 'sendWallet';
     },
     toggleModal(state) {
       state.showModal = !state.showModal;
+    },
+    updateSendWalletAmount(state, value) {
+      state.sendWalletAmount = value;
+    },
+    clearSendWalletAmount(state) {
+      state.sendWalletAmount = '';
+    },
+    calculateWallet(state) {
+      state.currentUser.wallet =
+        Number(state.currentUser.wallet) - Number(state.sendWalletAmount);
+      state.clickedUser.wallet =
+        Number(state.clickedUser.wallet) + Number(state.sendWalletAmount);
+    },
+    updateClickedUserWallet(state) {
+      state.otherUsers.find(
+        (value) => value.id === state.clickedUser.id
+      ).wallet = state.clickedUser.wallet;
     },
   },
   actions: {
@@ -118,17 +147,50 @@ export default new Vuex.Store({
           alert(error.message);
         });
     },
+    calculateCurrentUserWallet(context) {
+      firebase
+        .firestore()
+        .collection('users')
+        .doc(context.state.currentUser.id)
+        .update({
+          wallet: context.state.currentUser.wallet,
+        })
+        .catch((error) => {
+          alert(error.message);
+        });
+    },
+    calculateClickedUserWallet(context) {
+      firebase
+        .firestore()
+        .collection('users')
+        .doc(context.state.clickedUser.id)
+        .update({
+          wallet: context.state.clickedUser.wallet,
+        })
+        .catch((error) => {
+          alert(error.message);
+        });
+    },
+    sendWallet(context) {
+      if (context.state.sendWalletAmount !== '') {
+        context.commit('calculateWallet');
+        context.commit('updateClickedUserWallet');
+        context.dispatch('calculateCurrentUserWallet');
+        context.dispatch('calculateClickedUserWallet');
+      }
+    },
     createAccount(context, userCredential) {
       firebase
         .firestore()
         .collection('users')
         .doc(userCredential.user.uid)
         .set({
+          id: userCredential.user.uid,
           name: context.state.username,
           email: context.state.email,
           wallet: 1000,
         })
-        .then(function() {
+        .then(() => {
           alert('登録しました！');
           context.commit('emptyInputs');
         })
